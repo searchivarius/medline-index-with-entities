@@ -154,7 +154,14 @@ public class CreateBioConceptLuceneIndex {
             }
             String tmpId = parts.get(0);
             if (!tmpId.equals(docID)) {
-              throw new Exception("Different Id (" + tmpId + ") in the entity line (expected the same Id=" + docID +" as in title&abstract");
+              System.err.println(("Different Id (" + tmpId + ") in the entity line (expected the same Id=" + docID +" as in title&abstract," +
+                                  "I am going to skip this garbled input till the next empty line is encountered."));
+              
+              line = inp.readLine();++ln;              
+              while (line != null && !line.isEmpty()) {
+                line = inp.readLine(); ++ln; 
+              }
+              break;              
             }
             line = inp.readLine(); ++ln;
           }

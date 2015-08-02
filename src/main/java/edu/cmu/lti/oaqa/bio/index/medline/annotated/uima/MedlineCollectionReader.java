@@ -278,7 +278,7 @@ public class MedlineCollectionReader extends CollectionReader_ImplBase {
       } else {
         int startApprox = Integer.parseInt(parts.get(1));
         
-        // These offsets are +/- one. Let's compute them more precisely:
+        // Offsets in the annotation file can be +/- by one or two. Let's compute them more precisely:
         String coveredText = parts.get(3);
         
         int start = -1;
