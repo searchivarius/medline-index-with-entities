@@ -13,7 +13,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package edu.cmu.lti.oaqa.bio.index.medline.annotated;
+package edu.cmu.lti.oaqa.bio.index.medline.annotated.auxindex;
 
 import java.io.*;
 import java.util.*;
@@ -26,6 +26,9 @@ import org.apache.lucene.index.IndexWriterConfig.OpenMode;
 import org.apache.lucene.store.*;
 
 import com.google.common.base.Splitter;
+
+import edu.cmu.lti.oaqa.bio.index.medline.annotated.utils.CompressUtils;
+import edu.cmu.lti.oaqa.bio.index.medline.annotated.utils.UtilConstMedline;
 
 class TextLine {
   static Splitter splitOnPipe = Splitter.on('|');
@@ -162,10 +165,10 @@ public class CreateBioConceptLuceneIndex {
             if (entText.isEmpty()) {
 //              System.out.println("Skipping empty entry for id=" + docID);
             } else {            
-              luceneDoc.add(new StringField(UtilConst.PMID_FIELD, docID, Field.Store.YES));
-              luceneDoc.add(new StringField(UtilConst.ARTICLE_TITLE_FIELD, titleParsed.mText, Field.Store.YES));
-              luceneDoc.add(new StringField(UtilConst.ABSTRACT_TEXT_FIELD, abstractParsed.mText, Field.Store.YES));
-              luceneDoc.add(new StringField(UtilConst.ENTITIES_DESC_FIELD, entText, Field.Store.YES));
+              luceneDoc.add(new StringField(UtilConstMedline.PMID_FIELD, docID, Field.Store.YES));
+              luceneDoc.add(new StringField(UtilConstMedline.ARTICLE_TITLE_FIELD, titleParsed.mText, Field.Store.YES));
+              luceneDoc.add(new StringField(UtilConstMedline.ABSTRACT_TEXT_FIELD, abstractParsed.mText, Field.Store.YES));
+              luceneDoc.add(new StringField(UtilConstMedline.ENTITIES_DESC_FIELD, entText, Field.Store.YES));
               indexWriter.addDocument(luceneDoc);
               ++docAddedQty;
       

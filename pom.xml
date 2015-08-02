@@ -87,10 +87,40 @@
     </dependency>
 
 
-    <!--dependency>
+    <dependency>
       <groupId>edu.cmu.lti.oaqa.bio.index.medline</groupId>
       <artifactId>medline-indexer</artifactId>
       <version>0.0.1-SNAPSHOT</version>
-    </dependency-->
+    </dependency>
+
+    <!-- UIMA dependencies -->
+    <dependency>
+      <groupId>org.apache.uima</groupId>
+      <artifactId>uimaj-core</artifactId>
+      <version>2.7.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.uima</groupId>
+      <artifactId>uimaj-tools</artifactId>
+      <version>2.7.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.uima</groupId>
+      <artifactId>uimaj-examples</artifactId>
+      <version>2.7.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.uima</groupId>
+      <artifactId>uimafit-core</artifactId>
+      <version>2.1.0</version>
+    </dependency> 
+
+    <dependency>
+      <groupId>edu.cmu.lti.oaqa.annographix</groupId>
+      <artifactId>apps</artifactId>
+      <version>3.0-SNAPSHOT</version>
+    </dependency>
+
   </dependencies>
+
 </project>
