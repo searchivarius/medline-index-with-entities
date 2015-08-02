@@ -10,7 +10,7 @@
                 <nameValuePair>
                     <name>MaxQty</name>
                     <value>
-                        <integer>1000</integer>
+                        <string/>
                     </value>
                 </nameValuePair>
             </configurationParameterSettings>

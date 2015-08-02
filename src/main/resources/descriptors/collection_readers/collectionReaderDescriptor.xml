@@ -38,12 +38,6 @@
         </value>
       </nameValuePair>
       <nameValuePair>
-        <name>MaxQty</name>
-        <value>
-          <integer>10</integer>
-        </value>
-      </nameValuePair>
-    <nameValuePair>
         <name>AnnotLuceneDir</name>
         <value>
           <string>lucene_index</string>

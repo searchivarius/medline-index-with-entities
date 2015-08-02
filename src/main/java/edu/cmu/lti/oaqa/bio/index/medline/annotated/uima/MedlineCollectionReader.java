@@ -97,6 +97,8 @@ public class MedlineCollectionReader extends CollectionReader_ImplBase {
 
   // The directory storing the previously created Lucene index for annotations.
   private static final String PARAM_LUCENE_DIR = "AnnotLuceneDir";
+
+  private static final int BATCH_QTY = 1000;
   
   private ArrayList<File>   mInpFiles;
   private int                       mNextInpFileIndex = 0;
@@ -122,8 +124,19 @@ public class MedlineCollectionReader extends CollectionReader_ImplBase {
     File inputDir = new File(inputDirName);
     mInpFiles = Lists.newArrayList(inputDir.listFiles(new SuppportedExtensionFilter()));
     
+    System.out.println("I will process the following input files: ");
+    
+    for (File f: mInpFiles) {
+      System.out.println(f.getAbsolutePath());
+    }
+    
     Integer maxQty = (Integer) getConfigParameterValue(PARAM_MAX_QTY);
-    if (maxQty != null) mMaxEntryQty = maxQty;
+    if (maxQty != null) {
+      mMaxEntryQty = maxQty;
+      System.out.println("Procesing at most " + mMaxEntryQty + " entries");
+    } else {
+      System.out.println("Processing the whole collection.");
+    }
     
     try {
       String luceneDir = (String) getConfigParameterValue(PARAM_LUCENE_DIR);
@@ -235,6 +248,9 @@ public class MedlineCollectionReader extends CollectionReader_ImplBase {
           throw new CollectionException(e);
         }
         
+        if (mEntryQty % BATCH_QTY == 0)
+          System.out.println("Processed " + mEntryQty + " abstracts");
+        
         return;
       }
     }
@@ -303,7 +319,8 @@ public class MedlineCollectionReader extends CollectionReader_ImplBase {
     if (mEntryQty >= mMaxEntryQty) return false;
       
     if (mCurrReader!= null) {
-      return mCurrReader.hasNext();
+      if (mCurrReader.hasNext()) return true;
+      mCurrReader = null;
     }
     if (mNextInpFileIndex < mInpFiles.size()) {
       try {
@@ -332,6 +349,6 @@ public class MedlineCollectionReader extends CollectionReader_ImplBase {
   
   @Override
   public void close() throws IOException {
-    // TODO Auto-generated method stub    
+    System.out.println("Processed " + mEntryQty + " abstracts");    
   }
 }
