@@ -1,22 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<analysisEngineDescription xmlns="http://uima.apache.org/resourceSpecifier">
+<casConsumerDescription xmlns="http://uima.apache.org/resourceSpecifier">
   <frameworkImplementation>org.apache.uima.java</frameworkImplementation>
-  <primitive>true</primitive>  
-  <annotatorImplementationName>edu.cmu.lti.oaqa.bio.index.medline.annotated.uima.CreateView4AnnotText</annotatorImplementationName>
-  <analysisEngineMetaData>
-    <name>aeCreateView4Annot</name>
+  <implementationName>org.apache.uima.tools.components.XmiWriterCasConsumer</implementationName>
+  <processingResourceMetaData>
+    <name>xmiConsumer</name>
     <description/>
     <version>1.0</version>
     <vendor/>
     <configurationParameters>
       <configurationParameter>
-        <name>view_name</name>
-        <type>String</type>
-        <multiValued>false</multiValued>
-        <mandatory>true</mandatory>
-      </configurationParameter>
-      <configurationParameter>
-        <name>text_field</name>
+        <name>OutputDirectory</name>
         <type>String</type>
         <multiValued>false</multiValued>
         <mandatory>true</mandatory>
@@ -24,33 +17,29 @@
     </configurationParameters>
     <configurationParameterSettings>
       <nameValuePair>
-        <name>view_name</name>
+        <name>OutputDirectory</name>
         <value>
-          <string>annot</string>
-        </value>
-      </nameValuePair>
-      <nameValuePair>
-        <name>text_field</name>
-        <value>
-          <string>entityDesc</string>
+          <string>medline_output</string>
         </value>
       </nameValuePair>
     </configurationParameterSettings>
-    <typeSystemDescription/>
+    <typeSystemDescription>
+      </typeSystemDescription>
     <typePriorities/>
     <fsIndexCollection/>
     <capabilities>
       <capability>
-        <inputs/>
+        <inputs>
+          </inputs>
         <outputs/>
         <languagesSupported/>
       </capability>
     </capabilities>
   <operationalProperties>
-      <modifiesCas>true</modifiesCas>
+      <modifiesCas>false</modifiesCas>
       <multipleDeploymentAllowed>true</multipleDeploymentAllowed>
       <outputsNewCASes>false</outputsNewCASes>
     </operationalProperties>
-  </analysisEngineMetaData>
+  </processingResourceMetaData>
   <resourceManagerConfiguration/>
-</analysisEngineDescription>
+</casConsumerDescription>

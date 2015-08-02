@@ -54,7 +54,7 @@ class TextLine {
  *
  */
 public class CreateBioConceptLuceneIndex {
-  private static Splitter splitOnTAB = Splitter.on('\t');
+  private static Splitter mSplitOnTAB = Splitter.on('\t');
   private static final int BATCH_QTY = 50000;
 
   public static void Usage(String err) {
@@ -143,13 +143,14 @@ public class CreateBioConceptLuceneIndex {
           line = inp.readLine();++ln;
           
           while (line != null && !line.isEmpty()) {
-            sbEntities.append(line);
-            sbEntities.append('\n');
-            List<String> parts = splitOnTAB.splitToList(line);
+            List<String> parts = mSplitOnTAB.splitToList(line);
             if (parts.size() != 6) {
-              throw new Exception(
+              System.err.println(
                   "The entity line is expected to have six TAB-separated fields, but it has "
-                      + parts.size() + " line: '" + line.replaceAll("\\t", " <TAB> ") + "'");
+                      + parts.size() + " line: '" + line.replaceAll("\\t", " <TAB> ") + "', ignoring invalid line");
+            } else {
+              sbEntities.append(line);
+              sbEntities.append('\n');
             }
             if (!parts.get(0).equals(docID)) {
               throw new Exception("Different Id in the entity line (expected the same as in title&abstract");

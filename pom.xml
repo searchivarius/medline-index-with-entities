@@ -30,90 +30,8 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <lucene.version>4.10.3</lucene.version>
+    <stanford.version>3.5.2</stanford.version>
   </properties>
-
-	<dependencyManagement>
-		<dependencies>
-      <dependency>
-        <groupId>de.tudarmstadt.ukp.dkpro.core</groupId>
-        <artifactId>de.tudarmstadt.ukp.dkpro.core.opennlp-asl</artifactId>
-        <version>1.7.0</version>
-        <type>pom</type>
-        <scope>import</scope>
-      </dependency>
-      <dependency>
-        <groupId>de.tudarmstadt.ukp.dkpro.core</groupId>
-        <artifactId>de.tudarmstadt.ukp.dkpro.core.stanfordnlp-gpl</artifactId>
-        <version>1.7.0</version>
-        <type>pom</type>
-        <scope>import</scope>
-      </dependency>
-      <dependency>
-        <groupId>de.tudarmstadt.ukp.dkpro.core</groupId>
-        <artifactId>de.tudarmstadt.ukp.dkpro.core.clearnlp-model-morph-en-default</artifactId>
-        <version>20130715.0</version>
-      </dependency>
-      <dependency>
-        <groupId>de.tudarmstadt.ukp.dkpro.core</groupId>
-        <artifactId>de.tudarmstadt.ukp.dkpro.core.clearnlp-model-parser-en-mayo</artifactId>
-        <version>20131111.0</version>
-      </dependency>
-      <dependency>
-        <groupId>de.tudarmstadt.ukp.dkpro.core</groupId>
-        <artifactId>de.tudarmstadt.ukp.dkpro.core.clearnlp-model-parser-en-ontonotes</artifactId>
-        <version>20131128.0</version>
-      </dependency>
-      <dependency>
-        <groupId>de.tudarmstadt.ukp.dkpro.core</groupId>
-        <artifactId>de.tudarmstadt.ukp.dkpro.core.clearnlp-model-tagger-en-mayo</artifactId>
-        <version>20131111.0</version>
-      </dependency>
-      <dependency>
-        <groupId>de.tudarmstadt.ukp.dkpro.core</groupId>
-        <artifactId>de.tudarmstadt.ukp.dkpro.core.clearnlp-model-tagger-en-ontonotes</artifactId>
-        <version>20131128.0</version>
-      </dependency>
-      <dependency>
-        <groupId>de.tudarmstadt.ukp.dkpro.core</groupId>
-        <artifactId>de.tudarmstadt.ukp.dkpro.core.clearnlp-model-pred-en-ontonotes</artifactId>
-        <version>20131128.0</version>
-      </dependency>
-      <dependency>
-        <groupId>de.tudarmstadt.ukp.dkpro.core</groupId>
-        <artifactId>de.tudarmstadt.ukp.dkpro.core.clearnlp-model-pred-en-mayo</artifactId>
-        <version>20131111.0</version>
-      </dependency>
-      <dependency>
-        <groupId>de.tudarmstadt.ukp.dkpro.core</groupId>
-        <artifactId>de.tudarmstadt.ukp.dkpro.core.clearnlp-model-role-en-ontonotes</artifactId>
-        <version>20131111.0</version>
-      </dependency>
-      <dependency>
-        <groupId>de.tudarmstadt.ukp.dkpro.core</groupId>
-        <artifactId>de.tudarmstadt.ukp.dkpro.core.clearnlp-model-role-en-mayo</artifactId>
-        <version>20131111.0</version>
-      </dependency>
-      <dependency>
-        <groupId>de.tudarmstadt.ukp.dkpro.core</groupId>
-        <artifactId>de.tudarmstadt.ukp.dkpro.core.clearnlp-model-srl-en-ontonotes</artifactId>
-        <version>20131128.0</version>
-      </dependency>
-      <dependency>
-        <groupId>de.tudarmstadt.ukp.dkpro.core</groupId>
-        <artifactId>de.tudarmstadt.ukp.dkpro.core.clearnlp-model-srl-en-mayo</artifactId>
-        <version>20131111.0</version>
-      </dependency>
-
-      <dependency>
-        <groupId>de.tudarmstadt.ukp.dkpro.core</groupId>
-        <artifactId>de.tudarmstadt.ukp.dkpro.core.stanfordnlp-model-tagger-en-left3words-distsim</artifactId>
-        <version>20140616.1</version>
-      </dependency>
-
-
-
-		</dependencies>
-	</dependencyManagement>
 
   <dependencies>
     <dependency>
@@ -134,7 +52,7 @@
       </exclusions>
     </dependency>
 
-
+    <!-- Lucene dependencies -->
     <dependency>
       <groupId>org.apache.lucene</groupId>
       <artifactId>lucene-queryparser</artifactId>
@@ -155,6 +73,21 @@
       <artifactId>lucene-codecs</artifactId>
       <version>${lucene.version}</version>
     </dependency>
+    <!-- End of Lucene dependencies -->
+
+    <!-- Stanford -->
+    <dependency>
+	    <groupId>edu.stanford.nlp</groupId>
+	    <artifactId>stanford-corenlp</artifactId>
+	    <version>${stanford.version}</version>
+    </dependency>
+    <dependency>
+	    <groupId>edu.stanford.nlp</groupId>
+	    <artifactId>stanford-corenlp</artifactId>
+	    <version>${stanford.version}</version>
+      <classifier>models</classifier>
+    </dependency>
+    <!-- end of Stanford deps. -->
 
     <dependency>
 	    <groupId>com.google.guava</groupId>
@@ -176,17 +109,6 @@
       <version>0.0.1-SNAPSHOT</version>
     </dependency>
     
-    <!-- dkpro dependencies -->
-    <dependency>
-      <groupId>de.tudarmstadt.ukp.dkpro.core</groupId>
-      <artifactId>de.tudarmstadt.ukp.dkpro.core.clearnlp-asl</artifactId>
-    </dependency>
-    
-    <dependency>
-      <groupId>de.tudarmstadt.ukp.dkpro.core</groupId>
-      <artifactId>de.tudarmstadt.ukp.dkpro.core.stanfordnlp-gpl</artifactId>
-    </dependency>
-    <!-- end of dkpro dependencies -->
 
     <!-- UIMA dependencies -->
     <dependency>
