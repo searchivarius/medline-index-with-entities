@@ -152,8 +152,9 @@ public class CreateBioConceptLuceneIndex {
               sbEntities.append(line);
               sbEntities.append('\n');
             }
-            if (!parts.get(0).equals(docID)) {
-              throw new Exception("Different Id in the entity line (expected the same as in title&abstract");
+            String tmpId = parts.get(0);
+            if (!tmpId.equals(docID)) {
+              throw new Exception("Different Id (" + tmpId + ") in the entity line (expected the same Id=" + docID +" as in title&abstract");
             }
             line = inp.readLine(); ++ln;
           }

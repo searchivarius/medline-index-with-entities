@@ -99,6 +99,8 @@ public class MedlineCollectionReader extends CollectionReader_ImplBase {
   private static final String PARAM_LUCENE_DIR = "AnnotLuceneDir";
 
   private static final int BATCH_QTY = 1000;
+
+  private static final int APPROX_SHIFT = 2;
   
   private ArrayList<File>   mInpFiles;
   private int                       mNextInpFileIndex = 0;
@@ -242,7 +244,7 @@ public class MedlineCollectionReader extends CollectionReader_ImplBase {
           // 1. sentence annotations
           splitSentences(annotView);
           // 2. entity annotations
-          addEntities(annotView, entityDesc, articleTitle.length());
+          addEntities(annotView, entityDesc);
         } catch (Exception e) {
           e.printStackTrace();
           throw new CollectionException(e);
@@ -259,8 +261,10 @@ public class MedlineCollectionReader extends CollectionReader_ImplBase {
           new Exception("Bug: getNext() called, but no next entry is available."));
   }
   
-  private void addEntities(JCas annotView, String entityDesc, int titleLen) {
+  private void addEntities(JCas annotView, String entityDesc) {
     if (entityDesc.isEmpty()) return; // Ignore empty descriptions
+    
+    String text = annotView.getDocumentText();
     
 //    System.out.println("Processing entities!");
     
@@ -272,24 +276,37 @@ public class MedlineCollectionReader extends CollectionReader_ImplBase {
             "The entity line is expected to have six TAB-separated fields, but it has "
                 + parts.size() + " line: '" + line.replaceAll("\\t", " <TAB> ") + "', ignoring invalid line");
       } else {
-        int start = Integer.parseInt(parts.get(1));
-        int end   = Integer.parseInt(parts.get(2));
-        String type     = parts.get(4);
-        String typeID   = parts.get(5);
+        int startApprox = Integer.parseInt(parts.get(1));
         
-//        if (start < titleLen) {
-//        // We don't decrease for start >= titleLen,
-//        // because we have inserted an extra space after title
-//          --start;
-//          --end;
-//        }
-        Entity a1 = new Entity(annotView, start, end);
-        a1.addToIndexes();
-        a1.setBioConcept(type);
-        EntityConceptId a2 = new EntityConceptId(annotView, start, end);
-        a2.setParent(a1);
-        a2.addToIndexes();
-        a2.setBioConceptID(typeID);
+        // These offsets are +/- one. Let's compute them more precisely:
+        String coveredText = parts.get(3);
+        
+        int start = -1;
+        
+        for (int k = Math.max(startApprox - APPROX_SHIFT, 0);
+             k <= Math.min(startApprox + APPROX_SHIFT + 1, text.length() - coveredText.length()); ++k) {
+          // The end index of the substring() should be <= text.length
+          // This seems to be guaranteed if k <= text.length() - coveredText.length()
+          if (text.substring(k, k + coveredText.length()).equals(coveredText)) {
+            start = k;
+            break;
+          }
+        }
+        
+        if (start >= 0) {
+          int end = start + coveredText.length();
+          
+          String type     = parts.get(4);
+          String typeID   = parts.get(5);
+          
+          Entity a1 = new Entity(annotView, start, end);
+          a1.addToIndexes();
+          a1.setBioConcept(type);
+          EntityConceptId a2 = new EntityConceptId(annotView, start, end);
+          a2.setParent(a1);
+          a2.addToIndexes();
+          a2.setBioConceptID(typeID);
+        }
       }
     }    
   }
