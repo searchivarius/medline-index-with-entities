@@ -191,8 +191,12 @@ public class MedlineCollectionReader extends CollectionReader_ImplBase {
         fields.put(UtilConstMedline.ABSTRACT_TEXT_FIELD, abstractText);        
         fields.put(UtilConstMedline.ARTICLE_TITLE_FIELD, articleTitle);
         
-        // We insert an extract space: thus entity positions will need to be updated
-        String titlePlusText = abstractText + " " + articleTitle;
+        /*
+         *  We insert an extract space: I think all offsets were counted
+         *  assuming that such an extra space existed, though this
+         *  space isn't explicitly represented in the annotation data.
+         */
+        String titlePlusText = articleTitle + " " + abstractText;
         fields.put(UtilConstMedline.TITLE_PLUS_TEXT_FIELD, titlePlusText);
         
         JCas jcas;
@@ -257,12 +261,12 @@ public class MedlineCollectionReader extends CollectionReader_ImplBase {
         String type     = parts.get(4);
         String typeID   = parts.get(5);
         
-        if (start < titleLen) {
-        // We don't decrease for start >= titleLen,
-        // because we have inserted an extra space after title
-          --start;
-          --end;
-        }
+//        if (start < titleLen) {
+//        // We don't decrease for start >= titleLen,
+//        // because we have inserted an extra space after title
+//          --start;
+//          --end;
+//        }
         Entity a1 = new Entity(annotView, start, end);
         a1.addToIndexes();
         a1.setBioConcept(type);
