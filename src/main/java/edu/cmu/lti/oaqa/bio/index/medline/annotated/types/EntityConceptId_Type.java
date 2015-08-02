@@ -14,7 +14,7 @@ import org.apache.uima.cas.Feature;
 import org.apache.uima.jcas.tcas.Annotation_Type;
 
 /** 
- * Updated by JCasGen Sun Aug 02 04:02:09 EDT 2015
+ * Updated by JCasGen Sun Aug 02 04:33:09 EDT 2015
  * @generated */
 public class EntityConceptId_Type extends Annotation_Type {
   /** @generated */
@@ -45,20 +45,20 @@ public class EntityConceptId_Type extends Annotation_Type {
   public final static boolean featOkTst = JCasRegistry.getFeatOkTst("edu.cmu.lti.oaqa.bio.index.medline.annotated.types.EntityConceptId");
  
   /** @generated */
-  final Feature casFeat_parentId;
+  final Feature casFeat_parent;
   /** @generated */
-  final int     casFeatCode_parentId;
+  final int     casFeatCode_parent;
   /** @generated */ 
-  public int getParentId(int addr) {
-        if (featOkTst && casFeat_parentId == null)
-      jcas.throwFeatMissing("parentId", "edu.cmu.lti.oaqa.bio.index.medline.annotated.types.EntityConceptId");
-    return ll_cas.ll_getIntValue(addr, casFeatCode_parentId);
+  public int getParent(int addr) {
+        if (featOkTst && casFeat_parent == null)
+      jcas.throwFeatMissing("parent", "edu.cmu.lti.oaqa.bio.index.medline.annotated.types.EntityConceptId");
+    return ll_cas.ll_getRefValue(addr, casFeatCode_parent);
   }
   /** @generated */    
-  public void setParentId(int addr, int v) {
-        if (featOkTst && casFeat_parentId == null)
-      jcas.throwFeatMissing("parentId", "edu.cmu.lti.oaqa.bio.index.medline.annotated.types.EntityConceptId");
-    ll_cas.ll_setIntValue(addr, casFeatCode_parentId, v);}
+  public void setParent(int addr, int v) {
+        if (featOkTst && casFeat_parent == null)
+      jcas.throwFeatMissing("parent", "edu.cmu.lti.oaqa.bio.index.medline.annotated.types.EntityConceptId");
+    ll_cas.ll_setRefValue(addr, casFeatCode_parent, v);}
     
   
  
@@ -89,8 +89,8 @@ public class EntityConceptId_Type extends Annotation_Type {
     casImpl.getFSClassRegistry().addGeneratorForType((TypeImpl)this.casType, getFSGenerator());
 
  
-    casFeat_parentId = jcas.getRequiredFeatureDE(casType, "parentId", "uima.cas.Integer", featOkTst);
-    casFeatCode_parentId  = (null == casFeat_parentId) ? JCas.INVALID_FEATURE_CODE : ((FeatureImpl)casFeat_parentId).getCode();
+    casFeat_parent = jcas.getRequiredFeatureDE(casType, "parent", "uima.tcas.Annotation", featOkTst);
+    casFeatCode_parent  = (null == casFeat_parent) ? JCas.INVALID_FEATURE_CODE : ((FeatureImpl)casFeat_parent).getCode();
 
  
     casFeat_bioConceptID = jcas.getRequiredFeatureDE(casType, "bioConceptID", "uima.cas.String", featOkTst);

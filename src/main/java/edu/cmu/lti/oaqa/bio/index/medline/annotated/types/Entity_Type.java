@@ -14,7 +14,7 @@ import org.apache.uima.cas.Feature;
 import org.apache.uima.jcas.tcas.Annotation_Type;
 
 /** 
- * Updated by JCasGen Sun Aug 02 04:02:09 EDT 2015
+ * Updated by JCasGen Sun Aug 02 04:33:09 EDT 2015
  * @generated */
 public class Entity_Type extends Annotation_Type {
   /** @generated */
@@ -45,24 +45,6 @@ public class Entity_Type extends Annotation_Type {
   public final static boolean featOkTst = JCasRegistry.getFeatOkTst("edu.cmu.lti.oaqa.bio.index.medline.annotated.types.Entity");
  
   /** @generated */
-  final Feature casFeat_id;
-  /** @generated */
-  final int     casFeatCode_id;
-  /** @generated */ 
-  public int getId(int addr) {
-        if (featOkTst && casFeat_id == null)
-      jcas.throwFeatMissing("id", "edu.cmu.lti.oaqa.bio.index.medline.annotated.types.Entity");
-    return ll_cas.ll_getIntValue(addr, casFeatCode_id);
-  }
-  /** @generated */    
-  public void setId(int addr, int v) {
-        if (featOkTst && casFeat_id == null)
-      jcas.throwFeatMissing("id", "edu.cmu.lti.oaqa.bio.index.medline.annotated.types.Entity");
-    ll_cas.ll_setIntValue(addr, casFeatCode_id, v);}
-    
-  
- 
-  /** @generated */
   final Feature casFeat_bioConcept;
   /** @generated */
   final int     casFeatCode_bioConcept;
@@ -87,10 +69,6 @@ public class Entity_Type extends Annotation_Type {
   public Entity_Type(JCas jcas, Type casType) {
     super(jcas, casType);
     casImpl.getFSClassRegistry().addGeneratorForType((TypeImpl)this.casType, getFSGenerator());
-
- 
-    casFeat_id = jcas.getRequiredFeatureDE(casType, "id", "uima.cas.Integer", featOkTst);
-    casFeatCode_id  = (null == casFeat_id) ? JCas.INVALID_FEATURE_CODE : ((FeatureImpl)casFeat_id).getCode();
 
  
     casFeat_bioConcept = jcas.getRequiredFeatureDE(casType, "bioConcept", "uima.cas.String", featOkTst);

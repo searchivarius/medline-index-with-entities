@@ -34,6 +34,7 @@ import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 
 import edu.cmu.lti.oaqa.annographix.solr.UtilConst;
 
+import edu.cmu.lti.oaqa.bio.index.medline.annotated.types.DocInfo;
 import edu.cmu.lti.oaqa.bio.index.medline.annotated.types.Entity;
 import edu.cmu.lti.oaqa.bio.index.medline.annotated.types.EntityConceptId;
 import edu.cmu.lti.oaqa.bio.index.medline.annotated.types.Sentence;
@@ -42,6 +43,7 @@ import org.apache.uima.cas.CAS;
 import org.apache.uima.cas.CASException;
 import org.apache.uima.collection.CollectionException;
 import org.apache.uima.collection.CollectionReader_ImplBase;
+
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.resource.ResourceInitializationException;
 import org.apache.uima.util.Progress;
@@ -154,13 +156,14 @@ public class MedlineCollectionReader extends CollectionReader_ImplBase {
         ++mEntryQty;
         HashMap<String, String>  fields = new HashMap<String, String>();
         
-        fields.put(UtilConst.TAG_DOCNO, entry.getPmid() + ""); 
+        int pmid = entry.getPmid();
+        fields.put(UtilConst.TAG_DOCNO, pmid + ""); 
                 
         String entityDesc = "";
         String abstractText = entry.getAbstractText();
         String articleTitle = entry.getArticleTitle();
         
-        String query = entry.getPmid() + "";
+        String query = pmid + "";
         try {
           Query  queryParsed = mQueryParser.parse(query);
           
@@ -203,6 +206,13 @@ public class MedlineCollectionReader extends CollectionReader_ImplBase {
           jcas.setDocumentLanguage(DOCUMENT_LANGUAGE);
         try {
           jcas.setDocumentText(mXmlHelper.genXMLIndexEntry(fields));
+          
+          DocInfo info = 
+              new DocInfo(jcas, 0, jcas.getDocumentText().length());
+          
+          info.setPmid(pmid + "");
+          info.addToIndexes();
+          
           JCas annotView = jcas.createView(UtilConstMedline.ANNOT_VIEW_NAME);
           annotView.setDocumentText(titlePlusText);
           
@@ -232,11 +242,10 @@ public class MedlineCollectionReader extends CollectionReader_ImplBase {
   private void addEntities(JCas annotView, String entityDesc, int titleLen) {
     if (entityDesc.isEmpty()) return; // Ignore empty descriptions
     
-    int id = 0;
-    
-    System.out.println("Processing entities!");
+//    System.out.println("Processing entities!");
     
     for (String line : mSplitOnNL.splitToList(entityDesc)) {
+      if (line.isEmpty()) continue;
       List<String> parts = mSplitOnTAB.splitToList(line);
       if (parts.size() != 6) {
         System.err.println(
@@ -255,14 +264,12 @@ public class MedlineCollectionReader extends CollectionReader_ImplBase {
           --end;
         }
         Entity a1 = new Entity(annotView, start, end);
-        a1.setId(id);
         a1.addToIndexes();
         a1.setBioConcept(type);
         EntityConceptId a2 = new EntityConceptId(annotView, start, end);
-        a2.setParentId(id);
+        a2.setParent(a1);
         a2.addToIndexes();
         a2.setBioConceptID(typeID);
-        ++id;
       }
     }    
   }

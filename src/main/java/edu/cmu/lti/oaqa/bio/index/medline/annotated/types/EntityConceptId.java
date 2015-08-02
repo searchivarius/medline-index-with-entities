@@ -11,7 +11,7 @@ import org.apache.uima.jcas.tcas.Annotation;
 
 
 /** 
- * Updated by JCasGen Sun Aug 02 04:02:09 EDT 2015
+ * Updated by JCasGen Sun Aug 02 04:33:09 EDT 2015
  * XML source: /home/leo/SourceTreeGit/medline-index-with-entities/src/main/resources/types/typeSystemDescriptor.xml
  * @generated */
 public class EntityConceptId extends Annotation {
@@ -63,21 +63,21 @@ public class EntityConceptId extends Annotation {
  
     
   //*--------------*
-  //* Feature: parentId
+  //* Feature: parent
 
-  /** getter for parentId - gets An id of respective entity
+  /** getter for parent - gets An id of respective entity
    * @generated */
-  public int getParentId() {
-    if (EntityConceptId_Type.featOkTst && ((EntityConceptId_Type)jcasType).casFeat_parentId == null)
-      jcasType.jcas.throwFeatMissing("parentId", "edu.cmu.lti.oaqa.bio.index.medline.annotated.types.EntityConceptId");
-    return jcasType.ll_cas.ll_getIntValue(addr, ((EntityConceptId_Type)jcasType).casFeatCode_parentId);}
+  public Annotation getParent() {
+    if (EntityConceptId_Type.featOkTst && ((EntityConceptId_Type)jcasType).casFeat_parent == null)
+      jcasType.jcas.throwFeatMissing("parent", "edu.cmu.lti.oaqa.bio.index.medline.annotated.types.EntityConceptId");
+    return (Annotation)(jcasType.ll_cas.ll_getFSForRef(jcasType.ll_cas.ll_getRefValue(addr, ((EntityConceptId_Type)jcasType).casFeatCode_parent)));}
     
-  /** setter for parentId - sets An id of respective entity 
+  /** setter for parent - sets An id of respective entity 
    * @generated */
-  public void setParentId(int v) {
-    if (EntityConceptId_Type.featOkTst && ((EntityConceptId_Type)jcasType).casFeat_parentId == null)
-      jcasType.jcas.throwFeatMissing("parentId", "edu.cmu.lti.oaqa.bio.index.medline.annotated.types.EntityConceptId");
-    jcasType.ll_cas.ll_setIntValue(addr, ((EntityConceptId_Type)jcasType).casFeatCode_parentId, v);}    
+  public void setParent(Annotation v) {
+    if (EntityConceptId_Type.featOkTst && ((EntityConceptId_Type)jcasType).casFeat_parent == null)
+      jcasType.jcas.throwFeatMissing("parent", "edu.cmu.lti.oaqa.bio.index.medline.annotated.types.EntityConceptId");
+    jcasType.ll_cas.ll_setRefValue(addr, ((EntityConceptId_Type)jcasType).casFeatCode_parent, jcasType.ll_cas.ll_getFSRef(v));}    
    
     
   //*--------------*

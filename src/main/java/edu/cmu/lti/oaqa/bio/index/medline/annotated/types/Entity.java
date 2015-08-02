@@ -11,7 +11,7 @@ import org.apache.uima.jcas.tcas.Annotation;
 
 
 /** 
- * Updated by JCasGen Sun Aug 02 04:02:09 EDT 2015
+ * Updated by JCasGen Sun Aug 02 04:33:09 EDT 2015
  * XML source: /home/leo/SourceTreeGit/medline-index-with-entities/src/main/resources/types/typeSystemDescriptor.xml
  * @generated */
 public class Entity extends Annotation {
@@ -61,24 +61,6 @@ public class Entity extends Annotation {
   private void readObject() {/*default - does nothing empty block */}
      
  
-    
-  //*--------------*
-  //* Feature: id
-
-  /** getter for id - gets Entity ID
-   * @generated */
-  public int getId() {
-    if (Entity_Type.featOkTst && ((Entity_Type)jcasType).casFeat_id == null)
-      jcasType.jcas.throwFeatMissing("id", "edu.cmu.lti.oaqa.bio.index.medline.annotated.types.Entity");
-    return jcasType.ll_cas.ll_getIntValue(addr, ((Entity_Type)jcasType).casFeatCode_id);}
-    
-  /** setter for id - sets Entity ID 
-   * @generated */
-  public void setId(int v) {
-    if (Entity_Type.featOkTst && ((Entity_Type)jcasType).casFeat_id == null)
-      jcasType.jcas.throwFeatMissing("id", "edu.cmu.lti.oaqa.bio.index.medline.annotated.types.Entity");
-    jcasType.ll_cas.ll_setIntValue(addr, ((Entity_Type)jcasType).casFeatCode_id, v);}    
-   
     
   //*--------------*
   //* Feature: bioConcept
