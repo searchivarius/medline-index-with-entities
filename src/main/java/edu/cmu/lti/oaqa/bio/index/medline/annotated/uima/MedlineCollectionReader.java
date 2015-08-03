@@ -265,6 +265,7 @@ public class MedlineCollectionReader extends CollectionReader_ImplBase {
     if (entityDesc.isEmpty()) return; // Ignore empty descriptions
     
     String text = annotView.getDocumentText();
+    String textLC = text.toLowerCase();
     
 //    System.out.println("Processing entities!");
     
@@ -280,21 +281,22 @@ public class MedlineCollectionReader extends CollectionReader_ImplBase {
         
         // Offsets in the annotation file can be +/- by one or two. Let's compute them more precisely:
         String coveredText = parts.get(3);
+        String coveredTextLC = coveredText.toLowerCase();
         
         int start = -1;
         
         for (int k = Math.max(startApprox - APPROX_SHIFT, 0);
-             k <= Math.min(startApprox + APPROX_SHIFT + 1, text.length() - coveredText.length()); ++k) {
+             k <= Math.min(startApprox + APPROX_SHIFT + 1, text.length() - coveredTextLC.length()); ++k) {
           // The end index of the substring() should be <= text.length
-          // This seems to be guaranteed if k <= text.length() - coveredText.length()
-          if (text.substring(k, k + coveredText.length()).equals(coveredText)) {
+          // This seems to be guaranteed if k <= text.length() - coveredTextLC.length()
+          if (textLC.substring(k, k + coveredTextLC.length()).equals(coveredTextLC)) {
             start = k;
             break;
           }
         }
         
         if (start >= 0) {
-          int end = start + coveredText.length();
+          int end = start + coveredTextLC.length();
           
           String type     = parts.get(4);
           
