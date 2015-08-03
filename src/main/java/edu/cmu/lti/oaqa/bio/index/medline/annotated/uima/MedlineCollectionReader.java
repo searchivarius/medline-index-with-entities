@@ -316,7 +316,7 @@ public class MedlineCollectionReader extends CollectionReader_ImplBase {
           System.out.println(
               "WARNING: can't pinpoint the exact location of entity, pmId: " + pmid);
           System.out.println("Entity description in question:");
-          System.out.println(entityDesc);
+          System.out.println(line);
           System.out.println("Document text (title + abstract): " + text);
         }
       }
