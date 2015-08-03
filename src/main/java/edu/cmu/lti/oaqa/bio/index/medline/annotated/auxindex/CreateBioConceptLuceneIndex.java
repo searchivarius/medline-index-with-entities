@@ -147,14 +147,15 @@ public class CreateBioConceptLuceneIndex {
             if (parts.size() != 6) {
               System.err.println(
                   "The entity line is expected to have six TAB-separated fields, but it has "
-                      + parts.size() + " line: '" + line.replaceAll("\\t", " <TAB> ") + "', ignoring invalid line");
+                      + parts.size() + " line: '" + line.replaceAll("\\t", " <TAB> ") + "', ignoring invalid line # " + ln);
             } else {
               sbEntities.append(line);
               sbEntities.append('\n');
             }
             String tmpId = parts.get(0);
             if (!tmpId.equals(docID)) {
-              System.err.println(("Different Id (" + tmpId + ") in the entity line (expected the same Id=" + docID +" as in title&abstract," +
+              System.err.println(("Different Id (" + tmpId + ") in the entity description, line # " + ln +
+                                  " (expected the same Id=" + docID +" as in title&abstract," +
                                   "I am going to skip this garbled input till the next empty line is encountered."));
               
               line = inp.readLine();++ln;              

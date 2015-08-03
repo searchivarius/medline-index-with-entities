@@ -1,0 +1,5 @@
+<annotationMapping>
+  <type name="edu.cmu.lti.oaqa.bio.index.medline.annotated.types.Sentence"        fieldPrefix="sentence"   />
+  <type name="edu.cmu.lti.oaqa.bio.index.medline.annotated.types.Entity"          fieldPrefix="concept"   valueAttr="bioConcept"                      />
+  <type name="edu.cmu.lti.oaqa.bio.index.medline.annotated.types.EntityConceptId" fieldPrefix="conceptid" valueAttr="bioConceptID" parentAttr="parent"/>
+</annotationMapping>
