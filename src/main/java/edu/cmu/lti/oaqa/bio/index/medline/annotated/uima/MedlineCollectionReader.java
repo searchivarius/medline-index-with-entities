@@ -244,7 +244,7 @@ public class MedlineCollectionReader extends CollectionReader_ImplBase {
           // 1. sentence annotations
           splitSentences(annotView);
           // 2. entity annotations
-          addEntities(annotView, entityDesc);
+          addEntities(annotView, entityDesc, pmid);
         } catch (Exception e) {
           e.printStackTrace();
           throw new CollectionException(e);
@@ -261,7 +261,7 @@ public class MedlineCollectionReader extends CollectionReader_ImplBase {
           new Exception("Bug: getNext() called, but no next entry is available."));
   }
   
-  private void addEntities(JCas annotView, String entityDesc) {
+  private void addEntities(JCas annotView, String entityDesc, int pmid) {
     if (entityDesc.isEmpty()) return; // Ignore empty descriptions
     
     String text = annotView.getDocumentText();
@@ -297,15 +297,27 @@ public class MedlineCollectionReader extends CollectionReader_ImplBase {
           int end = start + coveredText.length();
           
           String type     = parts.get(4);
-          String typeID   = parts.get(5);
           
           Entity a1 = new Entity(annotView, start, end);
           a1.addToIndexes();
           a1.setBioConcept(type);
-          EntityConceptId a2 = new EntityConceptId(annotView, start, end);
-          a2.setParent(a1);
-          a2.addToIndexes();
-          a2.setBioConceptID(typeID);
+          
+          /*
+           * The concept ID string can have multiple IDs separated by "|"
+           */
+          for (String typeID: parts.get(5).split("|")) 
+          if (!typeID.isEmpty()) {            
+            EntityConceptId a2 = new EntityConceptId(annotView, start, end);
+            a2.setParent(a1);
+            a2.addToIndexes();
+            a2.setBioConceptID(typeID);
+          }
+        } else {
+          System.out.println(
+              "WARNING: can't pinpoint the exact location of entity, pmId: " + pmid);
+          System.out.println("Entity description in question:");
+          System.out.println(entityDesc);
+          System.out.println("Document text (title + abstract): " + text);
         }
       }
     }    
