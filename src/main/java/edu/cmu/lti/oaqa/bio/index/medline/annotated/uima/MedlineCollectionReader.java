@@ -212,7 +212,7 @@ public class MedlineCollectionReader extends CollectionReader_ImplBase {
          *  space isn't explicitly represented in the annotation data.
          */
         String titlePlusText = articleTitle + " " + abstractText;
-        fields.put(UtilConstMedline.TITLE_PLUS_TEXT_FIELD, titlePlusText);
+        fields.put(UtilConst.DEFAULT_TEXT4ANNOT_FIELD, titlePlusText);
         
         JCas jcas;
         
