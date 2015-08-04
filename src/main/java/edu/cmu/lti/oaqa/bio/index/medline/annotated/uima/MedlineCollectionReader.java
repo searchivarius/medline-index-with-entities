@@ -114,6 +114,7 @@ public class MedlineCollectionReader extends CollectionReader_ImplBase {
   private StanfordCoreNLP           mPipeline = null;
   private static Splitter           mSplitOnTAB = Splitter.on('\t');
   private static Splitter           mSplitOnNL  = Splitter.on('\n');  
+  private static Splitter           mSplitOnPipe  = Splitter.on('|');
   
   private XmlHelper mXmlHelper = new XmlHelper();
 
@@ -307,7 +308,7 @@ public class MedlineCollectionReader extends CollectionReader_ImplBase {
           /*
            * The concept ID string can have multiple IDs separated by "|"
            */
-          for (String typeID: parts.get(5).split("|")) 
+          for (String typeID: mSplitOnPipe.split(parts.get(5))) 
           if (!typeID.isEmpty()) {            
             EntityConceptId a2 = new EntityConceptId(annotView, start, end);
             a2.setParent(a1);
