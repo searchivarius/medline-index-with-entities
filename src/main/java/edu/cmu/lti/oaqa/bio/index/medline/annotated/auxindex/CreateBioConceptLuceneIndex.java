@@ -112,10 +112,14 @@ public class CreateBioConceptLuceneIndex {
       
       while (true) {
         String titleText = inp.readLine(); ++ln;
+        if (null == titleText) break;
+        if (titleText.isEmpty()) continue;
         
+/*
         if (null == titleText || titleText.isEmpty()) 
           throw new Exception(
                       String.format("Expected non-empty title line in line %d", ln));
+*/
   
         TextLine titleParsed = null, abstractParsed = null;
         
