@@ -13,7 +13,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package edu.cmu.lti.oaqa.bio.index.medline.annotated.apps;
+package edu.cmu.lti.oaqa.annographix.solr;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
