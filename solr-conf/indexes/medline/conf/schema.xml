@@ -57,7 +57,7 @@
  <defaultSearchField>Text4Annotation</defaultSearchField>
 
  <!-- SolrQueryParser configuration: defaultOperator="AND|OR" -->
- <solrQueryParser defaultOperator="AND"/>
+ <solrQueryParser defaultOperator="OR"/>
 
  <similarity class="org.apache.lucene.search.similarities.BM25Similarity" />
 </schema>
