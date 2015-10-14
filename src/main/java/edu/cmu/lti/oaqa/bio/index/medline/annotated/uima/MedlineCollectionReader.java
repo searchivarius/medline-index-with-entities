@@ -1,5 +1,6 @@
 /*
- *  Copyright 2015 Carnegie Mellon University
+for (String line : mSplitOnNL.splitToList(entityDesc)) {
+      if (line.isEmpty()) continue; *  Copyright 2015 Carnegie Mellon University
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -60,14 +61,113 @@ import edu.cmu.lti.oaqa.bio.index.medline.annotated.utils.UtilConstMedline;
 import edu.cmu.lti.oaqa.annographix.util.XmlHelper;
 import edu.cmu.lti.oaqa.annographix.solr.UtilConst;
 
-/**
- * A collection reader for Medline/Pubmed files.
- * 
- * @author Leonid Boytsov, 
- *          reusing some bits of the code by Zi Yang from https://github.com/ziy/medline-indexer.git
- *          
- *
- */
+
+class LongEntityEntry {
+  public static ArrayList<LongEntityEntry> parseEntityDesc(int pmid, String text, String entityDesc) {
+    String textLC = text.toLowerCase();    
+    
+    ArrayList<LongEntityEntry> res = new ArrayList<LongEntityEntry>();
+    
+    for (String line : mSplitOnNL.splitToList(entityDesc)) {
+      if (line.isEmpty()) continue;
+      
+      LongEntityEntry e = new LongEntityEntry(pmid, text, textLC, line, APPROX_SHIFT);
+      if (e.mIsInit) res.add(e);
+    }
+    
+    return res;
+  }
+  
+  // The conversion routine
+  public static String convertToString(ArrayList<LongEntityEntry> entries) {
+    StringBuffer sb = new StringBuffer();
+    
+    for (LongEntityEntry e : entries) {
+      sb.append(e.mStart);
+      sb.append('\t');
+      sb.append(e.mEnd);
+      sb.append('\t');
+      sb.append(e.mConcept);
+      sb.append('\t');
+      for (int i = 0; i < e.mConceptIds.size(); ++i) {
+        if (i > 0) sb.append('|');
+        sb.append(e.mConceptIds.get(i));
+      }
+      sb.append('\n');
+    }
+    
+    return sb.toString();
+  }
+  
+  private LongEntityEntry(int pmid, String text, String textLC, String line, int approxShift) {
+    if (line.isEmpty()) return;
+    
+    List<String> parts = mSplitOnTAB.splitToList(line);
+    if (parts.size() != 6) {
+      System.err.println(
+          "The entity line is expected to have six TAB-separated fields, but it has "
+              + parts.size() + " line: '" + line.replaceAll("\\t", " <TAB> ") + "', ignoring invalid line");
+    } else {
+      mDocId = parts.get(0);
+      
+      int startApprox = Integer.parseInt(parts.get(1));
+      
+      // Offsets in the annotation file can be +/- by one or two. Let's compute them more precisely:
+      mCoveredText = parts.get(3);
+      String coveredTextLC = mCoveredText.toLowerCase();
+      
+      mStart = -1;
+      
+      for (int k = Math.max(startApprox - approxShift, 0);
+           k <= Math.min(startApprox + approxShift + 1, text.length() - coveredTextLC.length()); ++k) {
+        // The end index of the substring() should be <= text.length
+        // This seems to be guaranteed if k <= text.length() - coveredTextLC.length()
+        if (textLC.substring(k, k + coveredTextLC.length()).equals(coveredTextLC)) {
+          mStart = k;
+          break;
+        }
+      }
+      
+      if (mStart >= 0) {
+        mEnd = mStart + coveredTextLC.length();
+        
+        mConcept = parts.get(4);
+        
+        mConceptIds = new ArrayList<String>();
+        /*
+         * The concept ID string can have multiple IDs separated by "|"
+         */
+        for (String conceptID: mSplitOnPipe.split(parts.get(5))) 
+        if (!conceptID.isEmpty()) {            
+          mConceptIds.add(conceptID);
+        }
+        
+        mIsInit = true;
+      } else {
+        System.out.println(
+            "WARNING: can't pinpoint the exact location of entity, pmId: " + pmid);
+        System.out.println("Entity description in question:");
+        System.out.println(line);
+        System.out.println("Document text (title + abstract): " + text);
+      }
+    }        
+  }
+  
+  public boolean   mIsInit = false;
+  public String    mDocId;
+  public int       mStart, mEnd;
+  public String    mCoveredText;
+  public String    mConcept;
+  
+  public ArrayList<String>  mConceptIds;
+  
+  private static Splitter    mSplitOnTAB  = Splitter.on('\t');
+  private static Splitter    mSplitOnPipe = Splitter.on(Pattern.compile("[,|]"));
+  private static Splitter    mSplitOnNL   = Splitter.on('\n');
+
+  private static final int APPROX_SHIFT = 2;
+}
+
 class SuppportedExtensionFilter implements FilenameFilter {
   public static Set<String> supportedExtensions = Sets.newHashSet(".xml.gz", ".xml");
   
@@ -82,6 +182,14 @@ class SuppportedExtensionFilter implements FilenameFilter {
   }
 }
 
+/**
+ * A collection reader for Medline/Pubmed files.
+ * 
+ * @author Leonid Boytsov, 
+ *          reusing some bits of the code by Zi Yang from https://github.com/ziy/medline-indexer.git
+ *          
+ *
+ */
 public class MedlineCollectionReader extends CollectionReader_ImplBase {
   public static final String PARAM_INPUT_DIR = "InputDir";
   
@@ -98,7 +206,6 @@ public class MedlineCollectionReader extends CollectionReader_ImplBase {
 
   private static final int BATCH_QTY = 1000;
 
-  private static final int APPROX_SHIFT = 2;
   
   private ArrayList<File>   mInpFiles;
   private int                       mNextInpFileIndex = 0;
@@ -110,10 +217,8 @@ public class MedlineCollectionReader extends CollectionReader_ImplBase {
   private QueryParser               mQueryParser;
   
   private StanfordCoreNLP           mPipeline = null;
-  private static Splitter           mSplitOnTAB = Splitter.on('\t');
-  private static Splitter           mSplitOnNL  = Splitter.on('\n');  
-  private static Splitter           mSplitOnPipe  = Splitter.on(Pattern.compile("[,|]"));
-  
+
+    
   private XmlHelper mXmlHelper = new XmlHelper();
 
   /**
@@ -206,12 +311,17 @@ public class MedlineCollectionReader extends CollectionReader_ImplBase {
         fields.put(UtilConstMedline.ARTICLE_TITLE_FIELD, articleTitle);
         
         /*
-         *  We insert an extract space: I think all offsets were counted
+         *  We insert an extra space: I think all offsets were counted
          *  assuming that such an extra space existed, though this
          *  space isn't explicitly represented in the annotation data.
          */
         String titlePlusText = articleTitle + " " + abstractText;
+        
+        ArrayList<LongEntityEntry> entries = 
+            LongEntityEntry.parseEntityDesc(pmid, titlePlusText, entityDesc);
+        
         fields.put(UtilConst.DEFAULT_TEXT4ANNOT_FIELD, titlePlusText);
+        fields.put(UtilConstMedline.ENTITIES_DESC_FIELD, LongEntityEntry.convertToString(entries));
         
         JCas jcas;
         
@@ -243,7 +353,7 @@ public class MedlineCollectionReader extends CollectionReader_ImplBase {
           // 1. sentence annotations
           splitSentences(annotView);
           // 2. entity annotations
-          addEntities(annotView, entityDesc, pmid);
+          addEntities(annotView, entries);
         } catch (Exception e) {
           e.printStackTrace();
           throw new CollectionException(e);
@@ -260,68 +370,21 @@ public class MedlineCollectionReader extends CollectionReader_ImplBase {
           new Exception("Bug: getNext() called, but no next entry is available."));
   }
   
-  private void addEntities(JCas annotView, String entityDesc, int pmid) {
-    if (entityDesc.isEmpty()) return; // Ignore empty descriptions
-    
-    String text = annotView.getDocumentText();
-    String textLC = text.toLowerCase();
-    
-//    System.out.println("Processing entities!");
-    
-    for (String line : mSplitOnNL.splitToList(entityDesc)) {
-      if (line.isEmpty()) continue;
-      List<String> parts = mSplitOnTAB.splitToList(line);
-      if (parts.size() != 6) {
-        System.err.println(
-            "The entity line is expected to have six TAB-separated fields, but it has "
-                + parts.size() + " line: '" + line.replaceAll("\\t", " <TAB> ") + "', ignoring invalid line");
-      } else {
-        int startApprox = Integer.parseInt(parts.get(1));
+  private void addEntities(JCas annotView, ArrayList<LongEntityEntry> entries) {
+    for (LongEntityEntry e: entries) {    
+      Entity a1 = new Entity(annotView, e.mStart, e.mEnd);
+      a1.addToIndexes();
+      a1.setBioConcept(e.mConcept);
+      
+      for (String conceptID: e.mConceptIds) { 
+        if (conceptID.isEmpty()) throw new RuntimeException("Bug: an empty conceptID");
         
-        // Offsets in the annotation file can be +/- by one or two. Let's compute them more precisely:
-        String coveredText = parts.get(3);
-        String coveredTextLC = coveredText.toLowerCase();
-        
-        int start = -1;
-        
-        for (int k = Math.max(startApprox - APPROX_SHIFT, 0);
-             k <= Math.min(startApprox + APPROX_SHIFT + 1, text.length() - coveredTextLC.length()); ++k) {
-          // The end index of the substring() should be <= text.length
-          // This seems to be guaranteed if k <= text.length() - coveredTextLC.length()
-          if (textLC.substring(k, k + coveredTextLC.length()).equals(coveredTextLC)) {
-            start = k;
-            break;
-          }
-        }
-        
-        if (start >= 0) {
-          int end = start + coveredTextLC.length();
-          
-          String type     = parts.get(4);
-          
-          Entity a1 = new Entity(annotView, start, end);
-          a1.addToIndexes();
-          a1.setBioConcept(type);
-          
-          /*
-           * The concept ID string can have multiple IDs separated by "|"
-           */
-          for (String typeID: mSplitOnPipe.split(parts.get(5))) 
-          if (!typeID.isEmpty()) {            
-            EntityConceptId a2 = new EntityConceptId(annotView, start, end);
-            a2.setParent(a1);
-            a2.addToIndexes();
-            a2.setBioConceptID(typeID);
-          }
-        } else {
-          System.out.println(
-              "WARNING: can't pinpoint the exact location of entity, pmId: " + pmid);
-          System.out.println("Entity description in question:");
-          System.out.println(line);
-          System.out.println("Document text (title + abstract): " + text);
-        }
+        EntityConceptId a2 = new EntityConceptId(annotView, e.mStart, e.mEnd);
+        a2.setParent(a1);
+        a2.addToIndexes();
+        a2.setBioConceptID(conceptID);
       }
-    }    
+    }
   }
 
   private void splitSentences(JCas jcas) {
@@ -383,7 +446,9 @@ public class MedlineCollectionReader extends CollectionReader_ImplBase {
   }
   
   public static void main(String args[]) {
-    for (String s : mSplitOnPipe.split("this,is|a simple,example|!")) {
+    Splitter    splitOnPipe = Splitter.on(Pattern.compile("[,|]"));
+    
+    for (String s : splitOnPipe.split("this,is||a simple,example|!")) {
       System.out.println(s);
     }
   }
