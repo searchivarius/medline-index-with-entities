@@ -46,6 +46,7 @@
 
   <field name="Text4Annotation"   type="text_lc" indexed="true" stored="true"  multiValued="false" required="true" omitPositions="false" storeOffsetsWithPositions="true" />
   <field name="Annotation"        type="payload" indexed="true" stored="true"  multiValued="false" required="true" omitPositions="false"  />
+  <field name="entityDesc"        type="string"  indexed="false" stored="true" multiValued="false" required="true"/>
   <!-- mandatory field -->
   <field name="_version_" type="long" indexed="true" stored="true" multiValued="false"/>
  </fields>
