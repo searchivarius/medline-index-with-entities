@@ -1,7 +1,8 @@
 package edu.cmu.lti.oaqa.annographix.solr;
 
+import java.io.BufferedReader;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
+import java.io.InputStreamReader;
 import java.util.*;
 
 import com.google.common.base.*;
@@ -41,27 +42,33 @@ public class QueryTransformer {
   
   
   CharMatcher  mSpaceMatcher        = CharMatcher.BREAKING_WHITESPACE;
-  Joiner       mQueryPartJoiner     = Joiner.on(" OR ");
+  Joiner       mQueryPartJoiner;
   Joiner       mCommaJoiner         = Joiner.on(",");
   
   String          mFieldNameList = mCommaJoiner.join(mFieldNames).toLowerCase();
   HashSet<String> mhFieldNames = new HashSet<String>();
   
   boolean     mIsDebug = false;
+  boolean     mIsAnd = false;
   
   SolrTokenizerWrapper  mTokenizer;
   
-  
   public QueryTransformer(String query0) throws ParsingException {
-    init(query0);
+    init(query0, "OR", false);
   }
   
-  public QueryTransformer(String query0, boolean debug) throws ParsingException {
-    init(query0);
-    mIsDebug = debug;
+  public QueryTransformer(String query0, String joinOp) throws ParsingException {
+    init(query0, joinOp, false);
+  }
+  
+  public QueryTransformer(String query0, String joinOp, boolean debug) throws ParsingException {
+    init(query0, joinOp, debug);
   }  
   
-  void init(String query0) throws ParsingException {
+  void init(String query0, String joinOp, boolean debug) throws ParsingException {
+    mIsDebug = debug;
+    mQueryPartJoiner = Joiner.on(" " + joinOp + " ");
+    
     TokenizerParams       params = new TokenizerParams("solr.StandardTokenizerFactory");
     params.addArgument("maxTokenLength", "128");
     try {
@@ -116,7 +123,6 @@ public class QueryTransformer {
             throw new ParsingException("Expecting a symbol after the backslash in position " + pos);
           }
           c = query.charAt(pos);
-          ++pos;
           if (c == ' ' || c == '"' || c == '[' || c == '*' || c == '\\') {
             keyPhrase.append(c);
           } else {
@@ -129,6 +135,7 @@ public class QueryTransformer {
           keyPhrase.append(c);
           ++pos;
         } else {
+          if (c == termSymbol) ++pos;
           // found the text terminating symbol, let's see if there is a following field definition          
           while (pos < query.length() && query.charAt(pos) == ' ') {
             ++pos;
@@ -222,8 +229,8 @@ public class QueryTransformer {
             UtilConstMedline.CONCEPT_INDEX_PREFIX, fieldName));     
         
         for (int k = 0; k < keyPhraseParts.size(); ++k) {
-          sb.append(String.format(" ~%d:%s_%s #covers(0,%d)", 
-              k+1, UtilConstMedline.CONCEPT_INDEX_PREFIX, keyPhraseParts.get(k), 
+          sb.append(String.format(" ~%d:%s #covers(0,%d)", 
+              k+1, keyPhraseParts.get(k), 
               k+1)); 
         }
         
@@ -237,11 +244,24 @@ public class QueryTransformer {
   
   public static void main(String args[]) {
     try {
-      String str = args[0];
-      System.out.println("Query to parse:\n" + str);
-      QueryTransformer qt = new QueryTransformer(str);
       
-      System.out.println(qt.getQuery());
+      if (args.length == 1) {
+        String str = args[0];
+        System.out.println("Query to parse:\n" + str);
+        QueryTransformer qt = new QueryTransformer(str, "AND", true);
+        
+        System.out.println(qt.getQuery());
+      }
+      BufferedReader bufferRead = new BufferedReader(new InputStreamReader(System.in));
+      
+      String str;
+      
+      while ((str= bufferRead.readLine()) != null) {
+        QueryTransformer qt = new QueryTransformer(str);
+        
+        System.out.println(qt.getQuery());
+      }
+        
       
     } catch (Exception e) {
       e.printStackTrace();
