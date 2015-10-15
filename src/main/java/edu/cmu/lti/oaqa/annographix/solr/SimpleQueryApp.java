@@ -82,7 +82,10 @@ public class SimpleQueryApp {
         String query = sysInReader.readLine();
         if (null == query) break;
 
-        String tranQuery = QueryTransformer.transform(query);
+        QueryTransformer qt = new QueryTransformer(query);
+        
+        String tranQuery = qt.getQuery();
+            
                 
         System.out.println("Translated query:");
         System.out.println(tranQuery);

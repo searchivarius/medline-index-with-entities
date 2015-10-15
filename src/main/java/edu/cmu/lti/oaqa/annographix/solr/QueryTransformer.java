@@ -1,10 +1,12 @@
 package edu.cmu.lti.oaqa.annographix.solr;
 
-import java.util.ArrayList;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.util.*;
 
-import com.google.common.base.CharMatcher;
-import com.google.common.base.Joiner;
-import com.google.common.base.Splitter;
+import com.google.common.base.*;
+
+import edu.cmu.lti.oaqa.bio.index.medline.annotated.utils.UtilConstMedline;
 
 /**
  * 
@@ -17,60 +19,236 @@ import com.google.common.base.Splitter;
  */
 
 public class QueryTransformer {
-  public static String transform(String query) {
-    Splitter ws = Splitter.on(CharMatcher.BREAKING_WHITESPACE);
-    
-    StringBuffer sb     = new StringBuffer();
-    ArrayList<String>   parts = new ArrayList<String>();
-    
-    for (String s : ws.split(query)) {
-      if (s.indexOf(':') > 0) { 
-        appendPart(parts, sb);
-        if (sb.length() > 0) sb.append(' ');
-        sb.append(s);
-      } else parts.add(s);
-    }
-    appendPart(parts, sb);
-    
-    return sb.toString();
+  
+  private static final String   CONCEPT_ID_SUFFIX = "_id";
+  private static final int      PADDING_SIZE = 2; // This is a bit adhoc
+
+  enum QueryStates {
+    init,      // initial/default state
+    textInput  // entering a keyword
+  };
+  
+  ArrayList<String>    mQueryParts= new ArrayList<String>();
+  String               mFieldNames[] = {
+      "Chemical",
+      "Disease",
+      "DNAMutation",
+      "Gene",
+      "ProteinMutation",
+      "SNP",
+      "Species"
+  };
+  
+  
+  CharMatcher  mSpaceMatcher        = CharMatcher.BREAKING_WHITESPACE;
+  Joiner       mQueryPartJoiner     = Joiner.on(" OR ");
+  Joiner       mCommaJoiner         = Joiner.on(",");
+  
+  String          mFieldNameList = mCommaJoiner.join(mFieldNames).toLowerCase();
+  HashSet<String> mhFieldNames = new HashSet<String>();
+  
+  boolean     mIsDebug = false;
+  
+  SolrTokenizerWrapper  mTokenizer;
+  
+  
+  public QueryTransformer(String query0) throws ParsingException {
+    init(query0);
   }
-
-  private static void appendPart(ArrayList<String> parts, StringBuffer sb) {
-    if (parts.isEmpty()) return;
-    if (sb.length() > 0) sb.append(' ');
+  
+  public QueryTransformer(String query0, boolean debug) throws ParsingException {
+    init(query0);
+    mIsDebug = debug;
+  }  
+  
+  void init(String query0) throws ParsingException {
+    TokenizerParams       params = new TokenizerParams("solr.StandardTokenizerFactory");
+    params.addArgument("maxTokenLength", "128");
+    try {
+      mTokenizer = new SolrTokenizerWrapper(params);
+    } catch (Exception e) {
+      throw new ParsingException("Cannot init SOLR tokenizer: " + e);
+    }
     
-    boolean hasAnnot = false;
     
-    for (String s : parts)
-      if (s.charAt(s.length() - 1) == ']' &&
-          s.indexOf('[') > 0) {
-        hasAnnot = true;
-        break;
-      }
+    for (String s: mFieldNames) mhFieldNames.add(s.toLowerCase());
+    
+    // All whitespaces become simply spaces
+    String query = mSpaceMatcher.replaceFrom(query0, ' ') +
+                  " "; // a sentinel to simplify the parsing algorithm;
+    
+    StringBuffer  keyPhrase = null;
 
-    if (!hasAnnot) {
-      sb.append(Joiner.on(' ').join(parts));
+    char          termSymbol = ' ';
+    QueryStates   state = QueryStates.init;
+    
+    int pos = 0;
+    while (pos < query.length()) {
+      char c = query.charAt(pos);
+      
+      if (QueryStates.init == state) {
+        keyPhrase = null;
+        
+        if (c == ' ') {
+          ++pos;
+          continue;
+        }
+        if (c == '"') {
+          state = QueryStates.textInput;
+          keyPhrase = new StringBuffer();
+          termSymbol = '"';
+          ++pos;
+          continue;
+        }
+        if (c == '[') {
+          ++pos;
+          throw 
+            new ParsingException("Field-staring symbol '[' in position " + pos + " should be preceed by a key-phrase or an asterisk");
+        }
+        termSymbol = ' ';
+        state = QueryStates.textInput;
+        keyPhrase = new StringBuffer();
+        continue; // don't increase pos here!        
+      } else if (QueryStates.textInput == state) {
+        if (c == '\\') {
+          ++pos;
+          if (pos >= query.length()) {
+            throw new ParsingException("Expecting a symbol after the backslash in position " + pos);
+          }
+          c = query.charAt(pos);
+          ++pos;
+          if (c == ' ' || c == '"' || c == '[' || c == '*' || c == '\\') {
+            keyPhrase.append(c);
+          } else {
+            throw 
+              new ParsingException("Expecting a space, a double quote, a backslash, an asterisk, or an opening square bracket after the backslash in position " + pos);
+          }
+          ++pos;
+          continue;
+        } else if (c != termSymbol && c != '[') {
+          keyPhrase.append(c);
+          ++pos;
+        } else {
+          // found the text terminating symbol, let's see if there is a following field definition          
+          while (pos < query.length() && query.charAt(pos) == ' ') {
+            ++pos;
+          }
+
+          if (pos == query.length() || query.charAt(pos) != '[') {
+            mQueryParts.add(makeSubQuery(keyPhrase.toString(), "", termSymbol == '"'));
+            keyPhrase = null;
+            state = QueryStates.init;
+            continue; // don't increment pos here!
+          } else {            
+            ++pos;
+            if (query.charAt(pos-1) != '[')
+              throw new RuntimeException("Bug: expected '[' in position: " + pos);
+            int endPos = query.indexOf(']', pos);
+            if (endPos < 0)
+              throw new ParsingException("Didn't find the field-ending symbol ']' after position: " + pos);
+            String fieldName = query.substring(pos, endPos);
+            
+            if (fieldName.isEmpty())
+              throw new ParsingException("Empty field name at position: " + pos);
+              
+            mQueryParts.add(makeSubQuery(keyPhrase.toString(), fieldName, termSymbol == '"'));
+            keyPhrase = null;
+            state = QueryStates.init;
+            pos = endPos + 1;
+            continue;
+          }
+        }
+      }      
+    }
+  }
+  
+  public String getQuery()  throws Exception {
+    return mQueryPartJoiner.join(mQueryParts);
+  }
+  
+  public String makeSubQuery(String keyPhrase, String fieldName, boolean hasQuotes) throws ParsingException  {
+    fieldName = fieldName.toLowerCase();
+    keyPhrase = keyPhrase.toLowerCase();
+    
+    String qs = hasQuotes ? "\"" : "";
+    
+    if (mIsDebug) {
+      if (fieldName.isEmpty()) fieldName = "NONE";
+      if (keyPhrase.isEmpty()) keyPhrase = "*";
+
+      return qs + keyPhrase + qs + ":" + fieldName;
     } else {
-      int id = 0;
+      if (fieldName.isEmpty()) {
+        return qs + keyPhrase + qs;
+      }
+      boolean isConcept = false;
+      if (fieldName.endsWith(CONCEPT_ID_SUFFIX)) {
+        fieldName = fieldName.substring(0, fieldName.length() - CONCEPT_ID_SUFFIX.length());
+        isConcept = true;
+      }
+      if (!mhFieldNames.contains(fieldName)) {
+        throw new ParsingException("Invalid pseudo-field name: " + fieldName + " available list: " + mFieldNameList);
+      }
+      StringBuffer sb = new StringBuffer();
       
-      sb.append("_query_:\"{!annographix ver=3} ");
-      
-      for (String s : parts) {
-        int pos = 0;
-        if (s.charAt(s.length() - 1) == ']' &&
-            (pos=s.indexOf('[')) > 0) {
-          String keyword = s.substring(0, pos);
-          String field = s.substring(pos + 1, s.length() - 1).toLowerCase();
-          sb.append(String.format(" @%d:concept_%s ~%d:%s #covers(%d,%d)",
-                                    id, field, id + 1, keyword, id, id + 1));
-          id += 2;
-        } else sb.append(" ~:" + s);
+      if (isConcept) {
+        if (keyPhrase.equals("*")) {
+          throw new ParsingException("The concept id cannot be '*'!");
+        }
+        sb.append("_query_:\"{!annographix ver=3} "); // start         
+        sb.append(String.format(" @0:%s_%s @1:%s_%s #covers(0,1)",
+                                UtilConstMedline.CONCEPT_INDEX_PREFIX,   fieldName,
+                                UtilConstMedline.CONCEPTID_INDEX_PREFIX, keyPhrase));
+      } else if (keyPhrase.equals("*")) {        
+        // Here fieldName can't be empty
+        if (fieldName.isEmpty()) 
+          throw new RuntimeException("Bug: field shouldn't be empty at this place");
+        return UtilConstMedline.ANNOT_FIELD + ":" + UtilConstMedline.CONCEPT_INDEX_PREFIX + "_" + fieldName;
+      } else {
+        ArrayList<String> keyPhraseParts = new ArrayList<String>();
+        int windowSize = keyPhrase.length();
+        
+        try {
+          for (AnnotationProxy a: mTokenizer.tokenize(keyPhrase, 0)) {
+            keyPhraseParts.add(a.mText);
+            windowSize += PADDING_SIZE;
+          }
+        } catch (IOException e) {
+          throw new ParsingException("SOLR tokenizer error: " + e);
+        }
+        
+        sb.append(String.format("_query_:\"{!annographix ver=3 span=%d} ", windowSize)); // start
+        sb.append(String.format(" @0:%s_%s",
+            UtilConstMedline.CONCEPT_INDEX_PREFIX, fieldName));     
+        
+        for (int k = 0; k < keyPhraseParts.size(); ++k) {
+          sb.append(String.format(" ~%d:%s_%s #covers(0,%d)", 
+              k+1, UtilConstMedline.CONCEPT_INDEX_PREFIX, keyPhraseParts.get(k), 
+              k+1)); 
+        }
+        
       }
       
-      sb.append("\"");      
+      sb.append("\"");  // end
+      
+      return sb.toString();
     }
-    
-    parts.clear();
   }
+  
+  public static void main(String args[]) {
+    try {
+      String str = args[0];
+      System.out.println("Query to parse:\n" + str);
+      QueryTransformer qt = new QueryTransformer(str);
+      
+      System.out.println(qt.getQuery());
+      
+    } catch (Exception e) {
+      e.printStackTrace();
+      System.err.println(e);
+      System.exit(1);
+    }
+
+  }  
   
 }
