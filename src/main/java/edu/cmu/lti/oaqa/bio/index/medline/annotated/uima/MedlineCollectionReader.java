@@ -1,6 +1,5 @@
 /*
-for (String line : mSplitOnNL.splitToList(entityDesc)) {
-      if (line.isEmpty()) continue; *  Copyright 2015 Carnegie Mellon University
+ * Copyright 2015 Carnegie Mellon University
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
