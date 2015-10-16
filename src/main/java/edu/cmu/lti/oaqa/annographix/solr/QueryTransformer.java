@@ -52,6 +52,10 @@ public class QueryTransformer {
   boolean     mIsAnd = false;
   
   SolrTokenizerWrapper  mTokenizer;
+
+  public QueryTransformer(String query0, boolean debug) throws ParsingException {
+    init(query0, "OR", debug);
+  }
   
   public QueryTransformer(String query0) throws ParsingException {
     init(query0, "OR", false);
@@ -123,11 +127,11 @@ public class QueryTransformer {
             throw new ParsingException("Expecting a symbol after the backslash in position " + pos);
           }
           c = query.charAt(pos);
-          if (c == ' ' || c == '"' || c == '[' || c == '*' || c == '\\') {
+          if (c == ' ' || c == '"' || c == '[' || c == '*' || c == '\\' || c == ']') {
             keyPhrase.append(c);
           } else {
             throw 
-              new ParsingException("Expecting a space, a double quote, a backslash, an asterisk, or an opening square bracket after the backslash in position " + pos);
+              new ParsingException("Expecting a space, a double quote, a backslash, an asterisk, or a square bracket after the backslash in position " + pos);
           }
           ++pos;
           continue;
@@ -257,7 +261,7 @@ public class QueryTransformer {
       String str;
       
       while ((str= bufferRead.readLine()) != null) {
-        QueryTransformer qt = new QueryTransformer(str);
+        QueryTransformer qt = new QueryTransformer(str, false);
         
         System.out.println(qt.getQuery());
       }

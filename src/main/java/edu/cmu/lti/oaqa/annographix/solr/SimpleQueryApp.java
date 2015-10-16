@@ -77,6 +77,7 @@ public class SimpleQueryApp {
       fieldList.add(UtilConst.SCORE_FIELD);
       fieldList.add(UtilConstMedline.ARTICLE_TITLE_FIELD);
       fieldList.add(UtilConstMedline.ENTITIES_DESC_FIELD);
+      fieldList.add(UtilConstMedline.ABSTRACT_TEXT_FIELD);
 
       BufferedReader sysInReader = new BufferedReader(new InputStreamReader(System.in));
       Joiner         commaJoiner = Joiner.on(',');
@@ -103,8 +104,9 @@ public class SimpleQueryApp {
           String id  = (String)doc.getFieldValue(UtilConst.ID_FIELD);
           float  score = (Float)doc.getFieldValue(UtilConst.SCORE_FIELD);
           String title = (String)doc.getFieldValue(UtilConstMedline.ARTICLE_TITLE_FIELD);
+          String titleAbstract = (String)doc.getFieldValue(UtilConstMedline.ABSTRACT_TEXT_FIELD);
           
-          System.out.println(score + " PMID=" + id + " " + title);
+          System.out.println(score + " PMID=" + id + " " + titleAbstract);
           
           String entityDesc = (String)doc.getFieldValue(UtilConstMedline.ENTITIES_DESC_FIELD);
           System.out.println("Entities:");
