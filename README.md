@@ -11,5 +11,5 @@ scripts/cpe.sh src/main/resources/descriptors/collection_processing_engines/cpeM
 
 Finally indexing using SOLR (*need to set up a SOLR instance first**):
 ``
-run/solr_indexer.sh ../../medline-index-with-entities/output/text.txt.gz ../../medline-index-with-entities/output/annot_offsets.tsv.gz http://metal.lti.cs.cmu.edu:8986/solr/medline Text4Annotation Annotation
+run/solr_indexer.sh ../../medline-index-with-entities/output/text.txt.gz ../../medline-index-with-entities/output/annot_offsets.tsv.gz http://<server address>:<server port>/solr/medline Text4Annotation Annotation
 ``
