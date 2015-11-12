@@ -23,6 +23,8 @@ import org.apache.commons.cli.*;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 
+import com.google.common.base.Joiner;
+
 import edu.cmu.lti.oaqa.annographix.solr.*;
 import edu.cmu.lti.oaqa.bio.index.medline.annotated.utils.UtilConstMedline;
 
@@ -74,15 +76,21 @@ public class SimpleQueryApp {
       fieldList.add(UtilConst.ID_FIELD);
       fieldList.add(UtilConst.SCORE_FIELD);
       fieldList.add(UtilConstMedline.ARTICLE_TITLE_FIELD);
+      fieldList.add(UtilConstMedline.ENTITIES_DESC_FIELD);
+      fieldList.add(UtilConstMedline.ABSTRACT_TEXT_FIELD);
 
       BufferedReader sysInReader = new BufferedReader(new InputStreamReader(System.in));
+      Joiner         commaJoiner = Joiner.on(',');
       
       while (true) {
         System.out.println("Input query: ");
         String query = sysInReader.readLine();
         if (null == query) break;
 
-        String tranQuery = QueryTransformer.transform(query);
+        QueryTransformer qt = new QueryTransformer(query);
+        
+        String tranQuery = qt.getQuery();
+            
                 
         System.out.println("Translated query:");
         System.out.println(tranQuery);
@@ -96,8 +104,17 @@ public class SimpleQueryApp {
           String id  = (String)doc.getFieldValue(UtilConst.ID_FIELD);
           float  score = (Float)doc.getFieldValue(UtilConst.SCORE_FIELD);
           String title = (String)doc.getFieldValue(UtilConstMedline.ARTICLE_TITLE_FIELD);
+          String titleAbstract = (String)doc.getFieldValue(UtilConstMedline.ABSTRACT_TEXT_FIELD);
           
-          System.out.println(score + " PMID=" + id + " " + title);
+          System.out.println(score + " PMID=" + id + " " + titleAbstract);
+          
+          String entityDesc = (String)doc.getFieldValue(UtilConstMedline.ENTITIES_DESC_FIELD);
+          System.out.println("Entities:");
+          for (EntityEntry e: EntityEntry.parseEntityDesc(entityDesc)) {
+            System.out.println(String.format("[%d %d] concept=%s concept_ids=%s",
+                                              e.mStart, e.mEnd, e.mConcept, 
+                                              commaJoiner.join(e.mConceptIds)));
+          }
         }      
       }
       
